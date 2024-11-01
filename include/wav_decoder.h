@@ -31,8 +31,6 @@
 
 namespace wav_decoder {
 
-const std::size_t min_buffer_size = 24;
-
 enum WAVDecoderState {
 
   WAV_DECODER_BEFORE_RIFF = 0,
