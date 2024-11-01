@@ -1,5 +1,3 @@
-#ifdef USE_ESP_IDF
-
 // Very basic WAV file decoder that parses format information and gets to the
 // data portion of the file.
 // Skips over extraneous chunks like LIST and INFO.
@@ -101,4 +99,3 @@ class WAVDecoder {
 }  // namespace wav_decoder
 
 #endif  // WAV_DECODER_H_
-#endif

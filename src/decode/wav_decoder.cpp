@@ -1,4 +1,3 @@
-#ifdef USE_ESP_IDF
 #include "wav_decoder.h"
 
 namespace wav_decoder {
@@ -124,4 +123,3 @@ WAVDecoderResult WAVDecoder::next() {
 }
 
 }  // namespace wav_decoder
-#endif

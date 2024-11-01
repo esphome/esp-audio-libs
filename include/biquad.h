@@ -9,8 +9,6 @@
 
 // biquad.h
 
-#ifdef USE_ESP_IDF
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -41,5 +39,4 @@ float biquad_apply_sample(Biquad *f, float input);
 
 #ifdef __cplusplus
 }
-#endif
 #endif

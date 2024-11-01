@@ -8,8 +8,6 @@
 
 // biquad.c
 
-#ifdef USE_ESP_IDF
-
 #include "biquad.h"
 
 // Second-order Lowpass
@@ -92,4 +90,3 @@ void biquad_apply_buffer(Biquad *f, float *buffer, int num_samples, int stride) 
       buffer += stride;
     }
 }
-#endif

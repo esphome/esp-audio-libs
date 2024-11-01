@@ -40,8 +40,6 @@
  *
  **************************************************************************************/
 
-#ifdef USE_ESP_IDF
-
 #include "mp3_decoder.h"
 
 #include <esp_heap_caps.h>
@@ -8853,4 +8851,3 @@ int MP3Decode(HMP3Decoder hMP3Decoder, unsigned char **inbuf, int *bytesLeft, sh
   }
   return ERR_MP3_NONE;
 }
-#endif

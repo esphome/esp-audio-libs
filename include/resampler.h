@@ -9,8 +9,6 @@
 // resampler.h
 #pragma once
 
-#ifdef USE_ESP_IDF
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -50,6 +48,4 @@ void resampleFree(Resample *cxt);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

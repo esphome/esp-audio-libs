@@ -8,8 +8,6 @@
 
 // resampler.c
 
-#ifdef USE_ESP_IDF
-
 #include "resampler.h"
 
 #include "dsp.h"
@@ -500,5 +498,3 @@ static float subsample(Resample *cxt, float *source, float offset) {
   else
     return subsample_no_interpolate(cxt, source, offset);
 }
-
-#endif

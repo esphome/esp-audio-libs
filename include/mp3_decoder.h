@@ -1,5 +1,3 @@
-#ifdef USE_ESP_IDF
-
 #ifndef MP3_DECODER_H_
 #define MP3_DECODER_H_
 
@@ -382,4 +380,3 @@ int MP3GetNextFrameInfo(HMP3Decoder hMP3Decoder, MP3FrameInfo *mp3FrameInfo, uns
 int MP3FindSyncWord(unsigned char *buf, int nBytes);
 
 #endif  // MP3_DECODER_H_
-#endif
