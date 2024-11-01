@@ -106,4 +106,15 @@ WAVDecoderResult WAVDecoder::next() {
   return WAV_DECODER_SUCCESS_NEXT;
 }
 
+void WAVDecoder::reset() {
+  this->state_ = WAV_DECODER_BEFORE_RIFF;
+  this->bytes_to_skip_ = 0;
+  this->chunk_name_ = "";
+  this->chunk_bytes_left_ = 0;
+
+  this->sample_rate_ = 0;
+  this->num_channels_ = 0;
+  this->bits_per_sample_ = 0;
+}
+
 }  // namespace wav_decoder
