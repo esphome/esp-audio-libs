@@ -88,12 +88,13 @@ class FLACDecoder {
   /* Number of audio samples (after read_header()) */
   uint32_t get_max_block_size() { return this->max_block_size_; }
 
-
   /* Maximum number of output samples per frame (after read_header()) */
   uint32_t get_output_buffer_size() { return this->max_block_size_ * this->num_channels_; }
 
   /* Maximum number of output samples per frame (after read_header()) */
-  uint32_t get_output_buffer_size_bytes() { return this->max_block_size_ * this->num_channels_ * this->sample_depth_ / 8; }
+  uint32_t get_output_buffer_size_bytes() {
+    return this->max_block_size_ * this->num_channels_ * this->sample_depth_ / 8;
+  }
 
   std::size_t get_bytes_index() { return this->buffer_index_; }
 
@@ -120,10 +121,11 @@ class FLACDecoder {
                                         uint32_t sample_depth);
 
   /* Decodes prediction residuals. */
-  FLACDecoderResult decode_residuals(int32_t* buffer, size_t warm_up_samples, uint32_t block_size);
+  FLACDecoderResult decode_residuals(int32_t *buffer, size_t warm_up_samples, uint32_t block_size);
 
   /* Completes predicted samples. */
-  void restore_linear_prediction(int32_t* sub_frame_buffer, size_t num_of_samples, const std::vector<int16_t> &coefs, int32_t shift);
+  void restore_linear_prediction(int32_t *sub_frame_buffer, size_t num_of_samples, const std::vector<int16_t> &coefs,
+                                 int32_t shift);
 
   uint32_t read_aligned_byte();
 

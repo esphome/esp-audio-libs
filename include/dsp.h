@@ -20,10 +20,8 @@
 #include <esp_err.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-
 
 /**
  * @brief      dot product of two float vectors
@@ -61,7 +59,6 @@ esp_err_t dsps_dotprod_f32_aes3(const float *src1, const float *src2, float *des
 esp_err_t dsps_mulc_s16_ae32(const int16_t *input, int16_t *output, int len, int16_t C, int step_in, int step_out);
 esp_err_t dsps_mulc_s16_ansi(const int16_t *input, int16_t *output, int len, int16_t C, int step_in, int step_out);
 
-
 /**
  * @brief   add two arrays
  *
@@ -81,9 +78,12 @@ esp_err_t dsps_mulc_s16_ansi(const int16_t *input, int16_t *output, int len, int
  *      - ESP_OK on success
  *      - One of the error codes from DSP library
  */
-esp_err_t dsps_add_s16_ansi(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1, int step2, int step_out, int shift);
-esp_err_t dsps_add_s16_ae32(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1, int step2, int step_out, int shift);
-esp_err_t dsps_add_s16_aes3(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1, int step2, int step_out, int shift);
+esp_err_t dsps_add_s16_ansi(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1,
+                            int step2, int step_out, int shift);
+esp_err_t dsps_add_s16_ae32(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1,
+                            int step2, int step_out, int shift);
+esp_err_t dsps_add_s16_aes3(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1,
+                            int step2, int step_out, int shift);
 
 #if (dsps_dotprod_f32_aes3_enabled == 1)
 #define dsps_dotprod_f32 dsps_dotprod_f32_aes3
@@ -91,15 +91,13 @@ esp_err_t dsps_add_s16_aes3(const int16_t *input1, const int16_t *input2, int16_
 #define dsps_dotprod_f32 dsps_dotprod_f32_ae32
 #else
 #define dsps_dotprod_f32 dsps_dotprod_f32_ansi
-#endif // dsps_dotprod_f32_ae32_enabled
-
+#endif  // dsps_dotprod_f32_ae32_enabled
 
 #if (dsps_mulc_s16_ae32_enabled == 1)
 #define dsps_mulc_s16 dsps_mulc_s16_ae32
 #else
 #define dsps_mulc_s16 dsps_mulc_s16_ansi
-#endif // dsps_mulc_s16_ae32_enabled
-
+#endif  // dsps_mulc_s16_ae32_enabled
 
 #if (dsps_add_s16_aes3_enabled == 1)
 #define dsps_add_s16 dsps_add_s16_aes3
@@ -107,11 +105,10 @@ esp_err_t dsps_add_s16_aes3(const int16_t *input1, const int16_t *input2, int16_
 #define dsps_add_s16 dsps_add_s16_ae32
 #else
 #define dsps_add_s16 dsps_add_s16_ansi
-#endif // dsps_add_s16_aes3_enabled
+#endif  // dsps_add_s16_aes3_enabled
 
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif // __DSP_H__
+#endif  // __DSP_H__

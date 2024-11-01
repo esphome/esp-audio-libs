@@ -69,7 +69,7 @@ FLACDecoderResult FLACDecoder::read_header(size_t buffer_length) {
     return FLAC_DECODER_ERROR_BAD_HEADER;
   }
 
-  if ((this->min_block_size_ < 16 ) || (this->min_block_size_ > this->max_block_size_) ||
+  if ((this->min_block_size_ < 16) || (this->min_block_size_ > this->max_block_size_) ||
       (this->max_block_size_ > 65535)) {
     return FLAC_DECODER_ERROR_BAD_HEADER;
   }
@@ -78,52 +78,46 @@ FLACDecoderResult FLACDecoder::read_header(size_t buffer_length) {
   return FLAC_DECODER_SUCCESS;
 }  // read_header
 
+FLACDecoderResult FLACDecoder::frame_sync_() {
+  this->frame_sync_bytes_[0] = 0;
+  this->frame_sync_bytes_[1] = 0;
 
+  bool second_ff_byte_found = false;
+  uint32_t byte;
 
-FLACDecoderResult FLACDecoder::frame_sync_(){
-    this->frame_sync_bytes_[0] = 0;
-    this->frame_sync_bytes_[1] = 0;
+  this->align_to_byte();
 
-    bool second_ff_byte_found = false;
-    uint32_t byte;
-
-    this->align_to_byte();
-
-    while(true){
-      if ( second_ff_byte_found ){
-        //try if the prev found 0xff is first of the MAGIC NUMBER
-        byte = 0xff;
-        second_ff_byte_found = false;
+  while (true) {
+    if (second_ff_byte_found) {
+      // try if the prev found 0xff is first of the MAGIC NUMBER
+      byte = 0xff;
+      second_ff_byte_found = false;
+    } else {
+      byte = this->read_aligned_byte();
+    }
+    if (byte == 0xff) {
+      byte = this->read_aligned_byte();
+      if (byte == 0xff) {
+        // found a second 0xff, could be the first byte of the MAGIC NUMBER
+        second_ff_byte_found = true;
+      } else if (byte >> 1 == 0x7c) { /* MAGIC NUMBER for the last 6 sync bits and reserved 7th bit */
+        this->frame_sync_bytes_[0] = 0xff;
+        this->frame_sync_bytes_[1] = byte;
+        return FLAC_DECODER_SUCCESS;
       }
-      else{
-        byte = this->read_aligned_byte();
-      }
-      if( byte == 0xff ){
-        byte = this->read_aligned_byte();
-        if( byte == 0xff ){
-          //found a second 0xff, could be the first byte of the MAGIC NUMBER
-          second_ff_byte_found = true;
-        }
-        else if(byte >> 1 == 0x7c) { /* MAGIC NUMBER for the last 6 sync bits and reserved 7th bit */
-          this->frame_sync_bytes_[0] = 0xff;
-          this->frame_sync_bytes_[1] = byte;
-          return FLAC_DECODER_SUCCESS;
-        }
-      }
-      else if (this->out_of_data_){
-        return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
-      }
+    } else if (this->out_of_data_) {
+      return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
+    }
   }
   return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
 }
 
-
-FLACDecoderResult FLACDecoder::decode_frame_header_(){
+FLACDecoderResult FLACDecoder::decode_frame_header_() {
   uint8_t raw_header[16];
   uint32_t raw_header_len = 0;
   uint32_t new_byte;
 
-  if( this->frame_sync_() != FLAC_DECODER_SUCCESS ){
+  if (this->frame_sync_() != FLAC_DECODER_SUCCESS) {
     return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
   }
 
@@ -131,15 +125,15 @@ FLACDecoderResult FLACDecoder::decode_frame_header_(){
   raw_header[raw_header_len++] = this->frame_sync_bytes_[1];
 
   /* make sure that reserved bit is 0 */
-	if(raw_header[1] & 0x02){ /* MAGIC NUMBER */
-		return FLAC_DECODER_ERROR_BAD_MAGIC_NUMBER;
+  if (raw_header[1] & 0x02) { /* MAGIC NUMBER */
+    return FLAC_DECODER_ERROR_BAD_MAGIC_NUMBER;
   }
 
   new_byte = this->read_aligned_byte();
-  if(new_byte == 0xff) { /* MAGIC NUMBER for the first 8 frame sync bits */
-			/* if we get here it means our original sync was erroneous since the sync code cannot appear in the header */
-      // needs to search for sync code again
-      return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
+  if (new_byte == 0xff) { /* MAGIC NUMBER for the first 8 frame sync bits */
+    /* if we get here it means our original sync was erroneous since the sync code cannot appear in the header */
+    // needs to search for sync code again
+    return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
   }
   raw_header[raw_header_len++] = new_byte;
 
@@ -167,51 +161,51 @@ FLACDecoderResult FLACDecoder::decode_frame_header_(){
   // Assuming that we have sample rate from header
   // indicates if uncommon sample rate needs to be parsed though
   uint8_t sample_rate_code = raw_header[2] & 0x0f;
-  //assert( sample_rate_code == 0 || sample_rate_code == 0b1010 );
+  // assert( sample_rate_code == 0 || sample_rate_code == 0b1010 );
 
   // 9.1.3 Channel bits
   new_byte = this->read_aligned_byte();
-  if(new_byte == 0xff) { /* MAGIC NUMBER for the first 8 frame sync bits */
-			/* if we get here it means our original sync was erroneous since the sync code cannot appear in the header */
-      // needs to search for sync code again
-      return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
+  if (new_byte == 0xff) { /* MAGIC NUMBER for the first 8 frame sync bits */
+    /* if we get here it means our original sync was erroneous since the sync code cannot appear in the header */
+    // needs to search for sync code again
+    return FLAC_DECODER_ERROR_SYNC_NOT_FOUND;
   }
   raw_header[raw_header_len++] = new_byte;
   this->curr_frame_channel_assign_ = raw_header[3] >> 4;
 
   // 9.1.4 Bit depth bits
   uint8_t bits_per_sample_code = (raw_header[3] & 0x0e) >> 1;
-  switch( bits_per_sample_code){
+  switch (bits_per_sample_code) {
     case 0:
-      //take bit depth from streaminfo header
+      // take bit depth from streaminfo header
       break;
-    case 1: //  8 bit
-    case 2: // 12 bit
+    case 1:  //  8 bit
+    case 2:  // 12 bit
       // not supported in this version
       return FLAC_DECODER_ERROR_BAD_HEADER;
-    case 4: // 16 bit
+    case 4:  // 16 bit
       break;
-    case 5: // 20bit
-    case 6: // 24bit
-    case 7: // 32bit
+    case 5:  // 20bit
+    case 6:  // 24bit
+    case 7:  // 32bit
     default:
       // not supported in this version
       return FLAC_DECODER_ERROR_BAD_HEADER;
   }
 
-  //reserved bit needs to be zero:
-  //ignore raw_header[3] & 0x01 != 0
-  //seems not to be respected by all encoder versions
-
+  // reserved bit needs to be zero:
+  // ignore raw_header[3] & 0x01 != 0
+  // seems not to be respected by all encoder versions
 
   // 9.1.5. Coded number
-  //The coded number is stored in a variable length code like UTF-8 as defined in [RFC3629], but extended to a maximum of 36 bits unencoded, 7 bytes encoded.
+  // The coded number is stored in a variable length code like UTF-8 as defined in [RFC3629], but extended to a maximum
+  // of 36 bits unencoded, 7 bytes encoded.
   // Interpretation depends on block_size_mode, signalled with (raw_header[1] & 0x01)
   // We don't support file seeking for now so ignore the coded number
   // todo: check for invalid codes, i.e. 0xffffffff (fixed block size) and 0xffffffffffffffff (variable block size)
   uint32_t next_int = this->read_aligned_byte();
   raw_header[raw_header_len++] = next_int;
-  while (next_int >= 0b11000000 ) {
+  while (next_int >= 0b11000000) {
     raw_header[raw_header_len++] = this->read_aligned_byte();
     next_int = (next_int << 1) & 0xFF;
   }
@@ -222,7 +216,7 @@ FLACDecoderResult FLACDecoder::decode_frame_header_(){
     this->curr_frame_block_size_ = raw_header[raw_header_len++] + 1;
   } else if (block_size_code == 7) {
     raw_header[raw_header_len] = this->read_aligned_byte();
-    this->curr_frame_block_size_ =  raw_header[raw_header_len++] << 8;
+    this->curr_frame_block_size_ = raw_header[raw_header_len++] << 8;
     raw_header[raw_header_len] = this->read_aligned_byte();
     this->curr_frame_block_size_ |= raw_header[raw_header_len++];
     this->curr_frame_block_size_ += 1;
@@ -238,7 +232,7 @@ FLACDecoderResult FLACDecoder::decode_frame_header_(){
   }
 
   // out of data wasn't checked after each read, check it now
-  if(this->out_of_data_){
+  if (this->out_of_data_) {
     return FLAC_DECODER_ERROR_OUT_OF_DATA;
   }
 
@@ -259,7 +253,8 @@ FLACDecoderResult FLACDecoder::decode_frame(size_t buffer_length, int16_t *outpu
 
   if (!this->block_samples_) {
     // freed in free_buffers()
-    this->block_samples_ = (int32_t*)heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    this->block_samples_ = (int32_t *) heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t),
+                                                        MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   }
   if (!this->block_samples_) {
     return FLAC_DECODER_ERROR_MEMORY_ALLOCATION_ERROR;
@@ -273,13 +268,13 @@ FLACDecoderResult FLACDecoder::decode_frame(size_t buffer_length, int16_t *outpu
   uint64_t previous_bit_buffer = this->bit_buffer_;
   uint32_t previous_bit_buffer_length = this->bit_buffer_length_;
   ret = this->decode_frame_header_();
-  if( ret != FLAC_DECODER_SUCCESS ){
+  if (ret != FLAC_DECODER_SUCCESS) {
     return ret;
   }
 
   // Memory is allocated based on the maximum block size.
   // Ensure that no out-of-bounds access occurs, particularly in case of parsing errors.
-  if( this->curr_frame_block_size_ > this->max_block_size_ ){
+  if (this->curr_frame_block_size_ > this->max_block_size_) {
     return FLAC_DECODER_ERROR_BLOCK_SIZE_OUT_OF_RANGE;
   }
 
@@ -388,7 +383,8 @@ FLACDecoderResult FLACDecoder::decode_subframe(uint32_t block_size, uint32_t sam
   if (type == 0) {
     // Constant
     int32_t value = this->read_sint(sample_depth) << shift;
-    std::fill(this->block_samples_ + block_samples_offset, this->block_samples_ + block_samples_offset + block_size, value );
+    std::fill(this->block_samples_ + block_samples_offset, this->block_samples_ + block_samples_offset + block_size,
+              value);
   } else if (type == 1) {
     // Verbatim
     for (std::size_t i = 0; i < block_size; i++) {
@@ -423,10 +419,10 @@ FLACDecoderResult FLACDecoder::decode_fixed_subframe(uint32_t block_size, std::s
 
   FLACDecoderResult result = FLAC_DECODER_SUCCESS;
 
-  int32_t* const sub_frame_buffer = this->block_samples_ + block_samples_offset;
+  int32_t *const sub_frame_buffer = this->block_samples_ + block_samples_offset;
   int32_t *out_ptr = sub_frame_buffer;
 
-  //warum-up samples
+  // warum-up samples
   for (std::size_t i = 0; i < pre_order; i++) {
     *(out_ptr++) = this->read_sint(sample_depth);
   }
@@ -443,8 +439,8 @@ FLACDecoderResult FLACDecoder::decode_lpc_subframe(uint32_t block_size, std::siz
                                                    uint32_t lpc_order, uint32_t sample_depth) {
   FLACDecoderResult result = FLAC_DECODER_SUCCESS;
 
-  int32_t* const sub_frame_buffer = this->block_samples_ + block_samples_offset;
-  int32_t* out_ptr = sub_frame_buffer;
+  int32_t *const sub_frame_buffer = this->block_samples_ + block_samples_offset;
+  int32_t *out_ptr = sub_frame_buffer;
 
   for (std::size_t i = 0; i < lpc_order; i++) {
     *(out_ptr++) = this->read_sint(sample_depth);
@@ -469,7 +465,8 @@ FLACDecoderResult FLACDecoder::decode_lpc_subframe(uint32_t block_size, std::siz
   return result;
 }  // decode_lpc_subframe
 
-FLACDecoderResult FLACDecoder::decode_residuals(int32_t* sub_frame_buffer, size_t warm_up_samples, uint32_t block_size) {
+FLACDecoderResult FLACDecoder::decode_residuals(int32_t *sub_frame_buffer, size_t warm_up_samples,
+                                                uint32_t block_size) {
   uint32_t method = this->read_uint(2);
   if (method >= 2) {
     return FLAC_DECODER_ERROR_RESERVED_RESIDUAL_CODING_METHOD;
@@ -498,8 +495,8 @@ FLACDecoderResult FLACDecoder::decode_residuals(int32_t* sub_frame_buffer, size_
       }
     } else {
       std::size_t num_bits = this->read_uint(5);
-      if( num_bits == 0 ){
-        std::memset( out_ptr, 0, count * sizeof(int32_t));
+      if (num_bits == 0) {
+        std::memset(out_ptr, 0, count * sizeof(int32_t));
         out_ptr += count;
       } else {
         for (std::size_t j = 0; j < count; j++) {
@@ -518,8 +515,8 @@ FLACDecoderResult FLACDecoder::decode_residuals(int32_t* sub_frame_buffer, size_
       }
     } else {
       std::size_t num_bits = this->read_uint(5);
-      if( num_bits == 0 ){
-        std::memset( out_ptr, 0, count * sizeof(int32_t));
+      if (num_bits == 0) {
+        std::memset(out_ptr, 0, count * sizeof(int32_t));
         out_ptr += count;
       } else {
         for (std::size_t j = 0; j < count; j++) {
@@ -532,8 +529,8 @@ FLACDecoderResult FLACDecoder::decode_residuals(int32_t* sub_frame_buffer, size_
   return FLAC_DECODER_SUCCESS;
 }  // decode_residuals
 
-void FLACDecoder::restore_linear_prediction(int32_t* sub_frame_buffer, size_t num_of_samples, const std::vector<int16_t> &coefs, int32_t shift) {
-
+void FLACDecoder::restore_linear_prediction(int32_t *sub_frame_buffer, size_t num_of_samples,
+                                            const std::vector<int16_t> &coefs, int32_t shift) {
   for (std::size_t i = 0; i < num_of_samples - coefs.size() + 1; i++) {
     int32_t sum = 0;
     for (std::size_t j = 0; j < coefs.size(); ++j) {
@@ -543,12 +540,12 @@ void FLACDecoder::restore_linear_prediction(int32_t* sub_frame_buffer, size_t nu
   }
 }  // restore_linear_prediction
 
-uint32_t FLACDecoder::read_aligned_byte(){
-  //assumes byte alignment
-  assert( this->bit_buffer_length_ % 8 == 0 );
+uint32_t FLACDecoder::read_aligned_byte() {
+  // assumes byte alignment
+  assert(this->bit_buffer_length_ % 8 == 0);
 
-  if( this->bit_buffer_length_ >= 8 ){
-    this->bit_buffer_length_ -=8;
+  if (this->bit_buffer_length_ >= 8) {
+    this->bit_buffer_length_ -= 8;
     uint32_t ret_byte = this->bit_buffer_ >> this->bit_buffer_length_;
     return ret_byte & FLAC_UINT_MASK[8];
   }
@@ -563,7 +560,6 @@ uint32_t FLACDecoder::read_aligned_byte(){
   this->bytes_left_--;
 
   return next_byte;
-
 }
 
 uint32_t FLACDecoder::read_uint(std::size_t num_bits) {

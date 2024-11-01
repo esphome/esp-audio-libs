@@ -7094,7 +7094,9 @@ const int quadTabMaxBits[2] = {6, 4};
 /* apply sign of s to the positive number x (save in MSB, will do two's
  * complement in dequant) */
 #define ApplySign(x, s) \
-  { (x) |= ((s) & 0x80000000); }
+  { \
+    (x) |= ((s) & 0x80000000); \
+  }
 
 /**************************************************************************************
  * Function:    DecodeHuffmanPairs
@@ -8053,18 +8055,18 @@ MP3DecInfo *AllocateBuffers(void) {
   IMDCTInfo *mi;
   SubbandInfo *sbi;
 
-  mp3DecInfo = (MP3DecInfo *)heap_caps_malloc(sizeof(MP3DecInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  mp3DecInfo = (MP3DecInfo *) heap_caps_malloc(sizeof(MP3DecInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   if (!mp3DecInfo)
     return 0;
   ClearBuffer(mp3DecInfo, sizeof(MP3DecInfo));
 
-  fh = (FrameHeader *)heap_caps_malloc(sizeof(FrameHeader), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  si = (SideInfo *)heap_caps_malloc(sizeof(SideInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  sfi = (ScaleFactorInfo *)heap_caps_malloc(sizeof(ScaleFactorInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  hi = (HuffmanInfo *)heap_caps_malloc(sizeof(HuffmanInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  di = (DequantInfo *)heap_caps_malloc(sizeof(DequantInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  mi = (IMDCTInfo *)heap_caps_malloc(sizeof(IMDCTInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  sbi = (SubbandInfo *)heap_caps_malloc(sizeof(SubbandInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  fh = (FrameHeader *) heap_caps_malloc(sizeof(FrameHeader), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  si = (SideInfo *) heap_caps_malloc(sizeof(SideInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  sfi = (ScaleFactorInfo *) heap_caps_malloc(sizeof(ScaleFactorInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  hi = (HuffmanInfo *) heap_caps_malloc(sizeof(HuffmanInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  di = (DequantInfo *) heap_caps_malloc(sizeof(DequantInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  mi = (IMDCTInfo *) heap_caps_malloc(sizeof(IMDCTInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  sbi = (SubbandInfo *) heap_caps_malloc(sizeof(SubbandInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
   mp3DecInfo->FrameHeaderPS = (void *) fh;
   mp3DecInfo->SideInfoPS = (void *) si;
