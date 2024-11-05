@@ -8,7 +8,8 @@
 
 namespace flac {
 
-FLACDecoderResult FLACDecoder::read_header(size_t buffer_length) {
+FLACDecoderResult FLACDecoder::read_header(uint8_t *buffer, size_t buffer_length) {
+  this->buffer_ = buffer;
   this->buffer_index_ = 0;
   this->bytes_left_ = buffer_length;
   this->bit_buffer_ = 0;
@@ -240,7 +241,8 @@ FLACDecoderResult FLACDecoder::decode_frame_header_() {
   return FLAC_DECODER_SUCCESS;
 }
 
-FLACDecoderResult FLACDecoder::decode_frame(size_t buffer_length, int16_t *output_buffer, uint32_t *num_samples) {
+FLACDecoderResult FLACDecoder::decode_frame(uint8_t *buffer, size_t buffer_length, int16_t *output_buffer, uint32_t *num_samples) {
+  this->buffer_ = buffer;
   this->buffer_index_ = 0;
   this->bytes_left_ = buffer_length;
   this->out_of_data_ = false;

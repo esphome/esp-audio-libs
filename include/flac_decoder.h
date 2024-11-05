@@ -49,22 +49,16 @@ const static std::vector<int16_t> FLAC_FIXED_COEFFICIENTS[] = {
  */
 class FLACDecoder {
  public:
-  /* buffer - FLAC data
-   * buffer_size - size of the data buffer
-   * min_buffer_size - min bytes in buffer before fill_buffer is called
-   */
-  FLACDecoder(uint8_t *buffer) : buffer_(buffer) {}
-
   ~FLACDecoder() { this->free_buffers(); }
 
   /* Reads FLAC header from buffer.
    * Must be called before decode_frame. */
-  FLACDecoderResult read_header(size_t buffer_length);
+  FLACDecoderResult read_header(uint8_t *buffer, size_t buffer_length);
 
   /* Decodes a single frame of audio.
    * Copies num_samples into output_buffer.
    * Use get_output_buffer_size() to allocate output_buffer. */
-  FLACDecoderResult decode_frame(size_t buffer_length, int16_t *output_buffer, uint32_t *num_samples);
+  FLACDecoderResult decode_frame(uint8_t *buffer, size_t buffer_length, int16_t *output_buffer, uint32_t *num_samples);
 
   /* Frees internal memory. */
   void free_buffers();
