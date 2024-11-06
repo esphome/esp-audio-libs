@@ -8,7 +8,7 @@
 
 // biquad.c
 
-#include "biquad.h"
+#include "art_biquad.h"
 
 // Second-order Lowpass
 
