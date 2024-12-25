@@ -19,6 +19,10 @@ Resampler::~Resampler() {
   if (this->tpdf_generators_ != nullptr) {
     free(this->tpdf_generators_);
   }
+
+  if (this->error_ != nullptr) {
+    free(this->error_);
+  }
 };
 
 bool Resampler::initialize(float target_sample_rate, float source_sample_rate, uint8_t channels,
