@@ -1,5 +1,7 @@
 #include "resampler.h"
 
+#include "esp_random.h"
+
 namespace resampler {
 
 Resampler::~Resampler() {
@@ -13,6 +15,10 @@ Resampler::~Resampler() {
   if (this->float_output_buffer_ != nullptr) {
     free(this->float_output_buffer_);
   }
+  
+  if (this->tpdf_generators_ != nullptr) {
+    free(this->tpdf_generators_);
+  }
 };
 
 bool Resampler::initialize(float target_sample_rate, float source_sample_rate, uint8_t channels,
@@ -21,6 +27,11 @@ bool Resampler::initialize(float target_sample_rate, float source_sample_rate, u
   this->channels_ = channels;
   this->number_of_taps_ = number_of_taps;
   this->number_of_filters_ = number_of_filters;
+
+  this->error_ = (float*)malloc(channels*sizeof(float));
+  memset(this->error_, 0, channels*sizeof(float));
+
+  this->tpdf_dither_init_(channels);
 
   this->float_input_buffer_ =
       (float *) heap_caps_malloc(this->input_buffer_samples_ * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
@@ -87,7 +98,8 @@ bool Resampler::initialize(float target_sample_rate, float source_sample_rate, u
 }
 
 void Resampler::resample(const int16_t *input, int16_t *output, size_t input_frames_available,
-                         size_t output_frames_free, size_t &frames_used, size_t &frames_generated) {
+                         size_t output_frames_free, size_t &frames_used, size_t &frames_generated,
+                         uint32_t &clipped_samples) {
   unsigned int necessary_frames = resampleGetRequiredSamples(this->resampler_, output_frames_free, this->sample_ratio_);
 
   unsigned int frames_to_process = std::min(input_frames_available, necessary_frames);
@@ -118,16 +130,61 @@ void Resampler::resample(const int16_t *input, int16_t *output, size_t input_fra
   frames_used = res.input_used;
 
   const size_t samples_generated = frames_generated * this->channels_;
-  for (size_t i = 0; i < samples_generated; ++i) {
-    const float sample = this->float_output_buffer_[i];
-    if (sample >= 1.0f) {
-      output[i] = 32767;
-    } else if (sample < -1.0f) {
-      output[i] = -32768;
-    } else {
-      output[i] = static_cast<int16_t>(sample * 32768);
+
+  const uint8_t out_bits = 16;
+
+  float scaler = (1 << out_bits) / 2.0;
+  int32_t offset = (out_bits <= 8) * 128;
+  int32_t high_clip = (1 << (out_bits - 1)) - 1;
+  int32_t low_clip = ~high_clip;
+  int left_shift = (24 - out_bits) % 8;
+  size_t i, j;
+  clipped_samples = 0;
+
+  uint8_t *temp_buffer = (uint8_t*)(output);
+
+  for (i = j = 0; i < samples_generated; ++i) {
+    uint8_t chan = i % this->channels_;
+    int32_t output = floor((this->float_output_buffer_[i] *= scaler) - this->error_[chan] + this->tpdf_dither_(chan, -1) + 0.5);
+    if (output > high_clip) {
+      ++clipped_samples;
+      output = high_clip;
+    } else if (output < low_clip) {
+      ++clipped_samples;
+      output = low_clip;
+    }
+
+    this->error_[chan] += output - this->float_output_buffer_[i];
+    output = (output << left_shift) + offset;
+    temp_buffer[j++] = output = (output << left_shift) + offset;
+    if (out_bits > 8) {
+      temp_buffer[j++] = output >> 8;
+
+      if (out_bits > 16) {
+        temp_buffer[j++] = output >> 16;
+      }
     }
   }
+}
+
+void Resampler::tpdf_dither_init_(int num_channels) {
+  this->tpdf_generators_ = (uint32_t*) malloc(num_channels*sizeof(uint32_t));
+
+  for (size_t i = 0; i < num_channels; ++i) {
+    this->tpdf_generators_[i] = esp_random();
+  }
+}
+
+float Resampler::tpdf_dither_(int channel, int type) {
+  uint32_t random = this->tpdf_generators_[channel];
+  random = ((random << 4) - random) ^ 1;
+  random = ((random << 4) - random) ^ 1;
+  uint32_t first = type ? this->tpdf_generators_[channel] ^ ((int32_t) type >> 31) : ~random;
+  random = ((random << 4) - random) ^ 1;
+  random = ((random << 4) - random) ^ 1;
+  random = ((random << 4) - random) ^ 1;
+  this->tpdf_generators_[channel] = random;
+  return (((first >> 1) + (random >> 1)) / 2147483648.0) - 1.0;
 }
 
 }  // namespace resampler

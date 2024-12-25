@@ -38,10 +38,15 @@ class Resampler {
   /// @param frames_used size_t passed-by-reference variable that will store the number of frames processed from the
   /// input source
   /// @param frames_generated size_t passed-by-reference variable that will store the number of output frames generated
-  void resample(const int16_t *input, int16_t *output, size_t input_frames_available, size_t output_frames_free,
-                size_t &frames_used, size_t &frames_generated);
+  /// @param clipped_samples uint32_t passed-by-reference variable that will stor ethe number of clipped samples
+  void resample(const int16_t *input, int16_t *output, size_t input_frames_available,
+                         size_t output_frames_free, size_t &frames_used, size_t &frames_generated,
+                         uint32_t &clipped_samples);
 
  protected:
+  void tpdf_dither_init_(int num_channels);
+  float tpdf_dither_(int channel, int type);
+
   float *float_input_buffer_{nullptr};
   size_t input_buffer_samples_;
 
@@ -63,5 +68,8 @@ class Resampler {
   bool post_filter_{false};
 
   uint8_t channels_;
+
+  uint32_t *tpdf_generators_{nullptr};
+  float *error_{nullptr};
 };
 }  // namespace resampler
