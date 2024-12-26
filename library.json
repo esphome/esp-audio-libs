@@ -1,6 +1,6 @@
 {
     "name": "esp-audio-libs",
-    "version": "0.1.0",
+    "version": "1.0.1",
     "description": "Libraries for playing audio files on ESP32 devices",
     "keywords": "audio",
     "repository":
