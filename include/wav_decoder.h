@@ -2,8 +2,7 @@
 // data portion of the file.
 // Skips over extraneous chunks like LIST and INFO.
 
-#ifndef WAV_DECODER_H_
-#define WAV_DECODER_H_
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -29,6 +28,7 @@
  * (optional RIFF chunks)
  * */
 
+namespace esp_audio_libs {
 namespace wav_decoder {
 
 enum WAVDecoderState {
@@ -91,5 +91,4 @@ class WAVDecoder {
   uint16_t bits_per_sample_ = 0;
 };
 }  // namespace wav_decoder
-
-#endif  // WAV_DECODER_H_
+}  // namespace esp_audio_libs

@@ -6,9 +6,10 @@
 //      Distributed under the BSD Software License (see license.txt)      //
 ////////////////////////////////////////////////////////////////////////////
 
-// biquad.c
-
 #include "art_biquad.h"
+
+namespace esp_audio_libs {
+namespace art_resampler {
 
 // Second-order Lowpass
 
@@ -90,3 +91,6 @@ void biquad_apply_buffer(Biquad *f, float *buffer, int num_samples, int stride) 
       buffer += stride;
     }
 }
+
+}  // namespace art_resampler
+}  // namespace esp_audio_libs

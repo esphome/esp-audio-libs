@@ -1,6 +1,7 @@
 #include "wav_decoder.h"
 #include <cstdint>
 
+namespace esp_audio_libs {
 namespace wav_decoder {
 
 WAVDecoderResult WAVDecoder::decode_header(uint8_t *buffer, size_t bytes_available) {
@@ -159,3 +160,4 @@ void WAVDecoder::reset() {
 }
 
 }  // namespace wav_decoder
+}  // namespace esp_audio_libs

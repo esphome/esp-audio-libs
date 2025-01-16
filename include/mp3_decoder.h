@@ -1,9 +1,11 @@
-#ifndef MP3_DECODER_H_
-#define MP3_DECODER_H_
+#pragma once
 
 #include <stdlib.h>
 #include <string.h>
 #include <xtensa/config/core-isa.h>
+
+namespace esp_audio_libs {
+namespace helix_decoder {
 
 #define ASSERT(x) /* do nothing */
 
@@ -379,4 +381,5 @@ void MP3GetLastFrameInfo(HMP3Decoder hMP3Decoder, MP3FrameInfo *mp3FrameInfo);
 int MP3GetNextFrameInfo(HMP3Decoder hMP3Decoder, MP3FrameInfo *mp3FrameInfo, unsigned char *buf);
 int MP3FindSyncWord(unsigned char *buf, int nBytes);
 
-#endif  // MP3_DECODER_H_
+}  // namespace helix_decoder
+}  // namespace esp_audio_libs

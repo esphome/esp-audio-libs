@@ -6,13 +6,14 @@
 //      Distributed under the BSD Software License (see license.txt)      //
 ////////////////////////////////////////////////////////////////////////////
 
-// resampler.c
-
 #include "art_resampler.h"
 
 #include "dsp.h"
 
 #include <esp_heap_caps.h>
+
+namespace esp_audio_libs {
+namespace art_resampler {
 
 static void init_filter(Resample *cxt, float *filter, float fraction, float lowpass_ratio);
 static float subsample(Resample *cxt, float *source, float offset);
@@ -446,3 +447,6 @@ static float subsample(Resample *cxt, float *source, float offset) {
   else
     return subsample_no_interpolate(cxt, source, offset);
 }
+
+}  // namespace art_resampler
+}  // namespace esp_audio_libs

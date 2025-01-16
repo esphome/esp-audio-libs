@@ -85,27 +85,6 @@ esp_err_t dsps_add_s16_ae32(const int16_t *input1, const int16_t *input2, int16_
 esp_err_t dsps_add_s16_aes3(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1,
                             int step2, int step_out, int shift);
 
-/**
- * @brief   IIR filter
- *
- * IIR filter 2nd order direct form II (bi quad)
- * The extension (_ansi) use ANSI C and could be compiled and run on any platform.
- * The extension (_ae32) is optimized for ESP32 chip.
- *
- * @param[in] input: input array
- * @param output: output array
- * @param len: length of input and output vectors
- * @param coef: array of coefficients. b0,b1,b2,a1,a2
- *              expected that a0 = 1. b0..b2 - numerator, a0..a2 - denominator
- * @param w: delay line w0,w1. Length of 2.
- * @return
- *      - ESP_OK on success
- *      - One of the error codes from DSP library
- */
-esp_err_t dsps_biquad_f32_ansi(const float *input, float *output, int len, float *coef, float *w);
-esp_err_t dsps_biquad_f32_ae32(const float *input, float *output, int len, float *coef, float *w);
-esp_err_t dsps_biquad_f32_aes3(const float *input, float *output, int len, float *coef, float *w);
-
 #if (dsps_dotprod_f32_aes3_enabled == 1)
 #define dsps_dotprod_f32 dsps_dotprod_f32_aes3
 #elif (dotprod_f32_ae32_enabled == 1)
@@ -127,14 +106,6 @@ esp_err_t dsps_biquad_f32_aes3(const float *input, float *output, int len, float
 #else
 #define dsps_add_s16 dsps_add_s16_ansi
 #endif  // dsps_add_s16_aes3_enabled
-
-#if (dsps_biquad_f32_ae32_enabled == 1)
-#define dsps_biquad_f32 dsps_biquad_f32_ae32
-#elif (dsps_biquad_f32_aes3_enabled == 1)
-#define dsps_biquad_f32 dsps_biquad_f32_aes3
-#else
-#define dsps_biquad_f32 dsps_biquad_f32_ansi
-#endif  // dsps_biquad_f32_ae32_enabled
 
 #ifdef __cplusplus
 }

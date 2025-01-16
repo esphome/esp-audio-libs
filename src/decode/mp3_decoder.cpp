@@ -43,7 +43,9 @@
 #include "mp3_decoder.h"
 
 #include <esp_heap_caps.h>
-// #include "esphome/core/helpers.h"
+
+namespace esp_audio_libs {
+namespace helix_decoder {
 
 /* indexing = [version][samplerate index]
  * sample rate of frame (Hz)
@@ -8851,3 +8853,5 @@ int MP3Decode(HMP3Decoder hMP3Decoder, unsigned char **inbuf, int *bytesLeft, sh
   }
   return ERR_MP3_NONE;
 }
+}  // namespace helix_decoder
+}  // namespace esp_audio_libs

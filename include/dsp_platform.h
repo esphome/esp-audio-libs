@@ -12,7 +12,6 @@
 #define dotprod_f32_ae32_enabled 1
 #define dotprode_f32_ae32_enabled 1
 #define dsps_add_s16_ae32_enabled 1
-#define dsps_biquad_f32_ae32_enabled 1
 
 #endif  //
 
@@ -27,11 +26,6 @@
 #if CONFIG_IDF_TARGET_ESP32S3
 #define dsps_dotprod_f32_aes3_enabled 1
 #define dsps_add_s16_aes3_enabled 1
-#define dsps_biquad_f32_aes3_enabled 1
-#else
-#define dsps_dotprod_f32_aes3_enabled 0
-#define dsps_add_s16_aes3_enabled 0
-#define dsps_biquad_f32_aes3_enabled 0
 #endif
 
 #endif  // _dsp_platform_H_

@@ -16,6 +16,9 @@
 #include <math.h>
 #include <stdbool.h>
 
+namespace esp_audio_libs {
+namespace art_resampler {
+
 #define SUBSAMPLE_INTERPOLATE 0x1
 #define BLACKMAN_HARRIS 0x2
 #define INCLUDE_LOWPASS 0x4
@@ -30,10 +33,6 @@ typedef struct {
   unsigned int input_used, output_generated;
 } ResampleResult;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpassRatio, int flags);
 ResampleResult resampleProcess(Resample *cxt, const float *const *input, int numInputFrames, float *const *output,
                                int numOutputFrames, float ratio);
@@ -46,6 +45,5 @@ float resampleGetPosition(Resample *cxt);
 void resampleReset(Resample *cxt);
 void resampleFree(Resample *cxt);
 
-#ifdef __cplusplus
-}
-#endif
+}  // namespace art_resampler
+}  // namespace esp_audio_libs

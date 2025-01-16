@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <esp_heap_caps.h>
 
+namespace esp_audio_libs {
 namespace resampler {
 
 // Class that wraps the ART resampler for straightforward use
@@ -59,10 +60,10 @@ class Resampler {
   float *float_output_buffer_{nullptr};
   size_t output_buffer_samples_;
 
-  Resample *resampler_{nullptr};
+  art_resampler::Resample *resampler_{nullptr};
 
-  Biquad lowpass_[2][2];
-  BiquadCoefficients lowpass_coeff_;
+  art_resampler::Biquad lowpass_[2][2];
+  art_resampler::BiquadCoefficients lowpass_coeff_;
 
   uint16_t number_of_taps_;
   uint16_t number_of_filters_;
@@ -79,3 +80,4 @@ class Resampler {
   uint8_t channels_;
 };
 }  // namespace resampler
+}  // namespace esp_audio_libs
