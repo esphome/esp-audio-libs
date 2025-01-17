@@ -80,11 +80,11 @@ Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpa
   Resample *cxt = (Resample *) calloc(1, sizeof(Resample));
   int i;
 
-  if (lowpassRatio > 0.0 && lowpassRatio < 1.0)
+  if (lowpassRatio > 0.0f && lowpassRatio < 1.0f)
     flags |= INCLUDE_LOWPASS;
   else {
     flags &= ~INCLUDE_LOWPASS;
-    lowpassRatio = 1.0;
+    lowpassRatio = 1.0f;
   }
 
   if ((numTaps & 3) || numTaps <= 0 || numTaps > 1024) {
@@ -183,7 +183,7 @@ ResampleResult resampleProcess(Resample *cxt, const float *const *input, int num
       for (i = 0; i < cxt->numChannels; ++i)
         output[i][res.output_generated] = subsample(cxt, cxt->buffers[i], cxt->outputOffset);
 
-      cxt->outputOffset += (1.0 / ratio);
+      cxt->outputOffset += (1.0f / ratio);
       res.output_generated++;
       numOutputFrames--;
     }
@@ -224,7 +224,7 @@ ResampleResult resampleProcessInterleaved(Resample *cxt, const float *input, int
       for (i = 0; i < cxt->numChannels; ++i)
         *output++ = subsample(cxt, cxt->buffers[i], cxt->outputOffset);
 
-      cxt->outputOffset += (1.0 / ratio);
+      cxt->outputOffset += (1.0f / ratio);
       res.output_generated++;
       numOutputFrames--;
     }
@@ -261,7 +261,7 @@ unsigned int resampleGetRequiredSamples(Resample *cxt, int numOutputFrames, floa
       input_index++;
       res.input_used++;
     } else {
-      offset += (1.0 / ratio);
+      offset += (1.0f / ratio);
       numOutputFrames--;
     }
   }
@@ -288,7 +288,7 @@ unsigned int resampleGetExpectedOutput(Resample *cxt, int numInputFrames, float 
       } else
         break;
     } else {
-      offset += (1.0 / ratio);
+      offset += (1.0f / ratio);
       res.output_generated++;
     }
   }
@@ -302,7 +302,7 @@ unsigned int resampleGetExpectedOutput(Resample *cxt, int numInputFrames, float 
 // phase shift. The resampler cannot be reversed.
 
 void resampleAdvancePosition(Resample *cxt, float delta) {
-  if (delta < 0.0)
+  if (delta < 0.0f)
     fprintf(stderr, "resampleAdvancePosition() can only advance forward!\n");
   else
     cxt->outputOffset += delta;
@@ -336,7 +336,7 @@ void resampleAdvancePosition(Resample *cxt, float delta) {
 //         break;
 // }
 
-float resampleGetPosition(Resample *cxt) { return cxt->outputOffset + (cxt->numTaps / 2.0) - cxt->inputIndex; }
+float resampleGetPosition(Resample *cxt) { return cxt->outputOffset + (cxt->numTaps / 2.0f) - cxt->inputIndex; }
 
 // Free all resources associated with the resampler context, including the context pointer
 // itself. Do not use the context after this call.
@@ -368,11 +368,11 @@ static float apply_filter(float *A, float *B, int num_taps) {
 #endif
 
 static void init_filter(Resample *cxt, float *filter, float fraction, float lowpass_ratio) {
-  const float a0 = 0.35875;
-  const float a1 = 0.48829;
-  const float a2 = 0.14128;
-  const float a3 = 0.01168;
-  float filter_sum = 0.0;
+  const float a0 = 0.35875f;
+  const float a1 = 0.48829f;
+  const float a2 = 0.14128f;
+  const float a3 = 0.01168f;
+  float filter_sum = 0.0f;
   int i;
 
   // "dist" is the absolute distance from the sinc maximum to the filter tap to be calculated, in radians
@@ -386,22 +386,22 @@ static void init_filter(Resample *cxt, float *filter, float fraction, float lowp
     float ratio = dist / (cxt->numTaps / 2);
     float value;
 
-    if (dist != 0.0) {
+    if (dist != 0.0f) {
       value = sin(dist * lowpass_ratio) / (dist * lowpass_ratio);
 
       if (cxt->flags & BLACKMAN_HARRIS)
         value *= a0 + a1 * cos(ratio) + a2 * cos(2 * ratio) + a3 * cos(3 * ratio);
       else
-        value *= 0.5 * (1.0 + cos(ratio));  // Hann window
+        value *= 0.5f * (1.0f + cos(ratio));  // Hann window
     } else
-      value = 1.0;
+      value = 1.0f;
 
     filter_sum += cxt->tempFilter[i] = value;
   }
 
   // filter should have unity DC gain
 
-  float scaler = 1.0 / filter_sum, error = 0.0;
+  float scaler = 1.0f / filter_sum, error = 0.0f;
 
   for (i = cxt->numTaps / 2; i < cxt->numTaps; i = cxt->numTaps - i - (i >= cxt->numTaps / 2)) {
     filter[i] = (cxt->tempFilter[i] *= scaler) - error;
@@ -413,10 +413,10 @@ static float subsample_no_interpolate(Resample *cxt, float *source, float offset
   source += (int) floor(offset);
   offset -= floor(offset);
 
-  if (offset == 0.0 && !(cxt->flags & INCLUDE_LOWPASS))
+  if (offset == 0.0f && !(cxt->flags & INCLUDE_LOWPASS))
     return *source;
 
-  return apply_filter(cxt->filters[(int) floor(offset * cxt->numFilters + 0.5)], source - cxt->numTaps / 2 + 1,
+  return apply_filter(cxt->filters[(int) floor(offset * cxt->numFilters + 0.5f)], source - cxt->numTaps / 2 + 1,
                       cxt->numTaps);
 }
 
@@ -427,18 +427,18 @@ static float subsample_interpolate(Resample *cxt, float *source, float offset) {
   source += (int) floor(offset);
   offset -= floor(offset);
 
-  if (offset == 0.0 && !(cxt->flags & INCLUDE_LOWPASS))
+  if (offset == 0.0f && !(cxt->flags & INCLUDE_LOWPASS))
     return *source;
 
   i = (int) floor(offset *= cxt->numFilters);
   sum1 = apply_filter(cxt->filters[i], source - cxt->numTaps / 2 + 1, cxt->numTaps);
 
-  if ((offset -= i) == 0.0 && !(cxt->flags & INCLUDE_LOWPASS))
+  if ((offset -= i) == 0.0f && !(cxt->flags & INCLUDE_LOWPASS))
     return sum1;
 
   sum2 = apply_filter(cxt->filters[i + 1], source - cxt->numTaps / 2 + 1, cxt->numTaps);
 
-  return sum2 * offset + sum1 * (1.0 - offset);
+  return sum2 * offset + sum1 * (1.0f - offset);
 }
 
 static float subsample(Resample *cxt, float *source, float offset) {
