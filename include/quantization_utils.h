@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 namespace esp_audio_libs {
+namespace quantization_utils {
 
 /// @brief Converts an array of quantized samples with the specified number of bits into floating point samples.
 /// @param input_buffer Pointer to the input quantized samples aligned to the byte
@@ -23,4 +24,5 @@ void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint3
 uint32_t float_to_quantized(const float *input_buffer, uint8_t *output_buffer, uint32_t num_samples,
                             uint8_t output_bits);
 
+}  // namespace quantization_utils
 }  // namespace esp_audio_libs

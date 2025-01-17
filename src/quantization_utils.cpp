@@ -1,6 +1,7 @@
-#include "utils.h"
+#include "quantization_utils.h"
 
 namespace esp_audio_libs {
+namespace quantization_utils {
 
 void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint32_t num_samples, uint8_t input_bits,
                         float gain_db) {
@@ -92,4 +93,5 @@ uint32_t float_to_quantized(const float *input_buffer, uint8_t *output_buffer, u
   return clipped_samples;
 }
 
-}
+}  // namespace quantization_utils
+}  // namespace esp_audio_libs
