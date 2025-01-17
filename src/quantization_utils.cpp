@@ -5,17 +5,17 @@ namespace quantization_utils {
 
 void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint32_t num_samples, uint8_t input_bits,
                         float gain_db) {
-  float gain = pow(10.0, gain_db / 20.0);
+  float gain = pow(10.0f, gain_db / 20.0f);
 
   if (input_bits <= 8) {
-    float gain_factor = gain / 128.0;
+    float gain_factor = gain / 128.0f;
 
     for (unsigned int i = 0; i < num_samples; ++i) {
       output_buffer[i] = ((int) input_buffer[i] - 128) * gain_factor;
     }
 
   } else if (input_bits <= 16) {
-    float gain_factor = gain / 32768.0;
+    float gain_factor = gain / 32768.0f;
     unsigned int i, j;
 
     for (i = j = 0; i < num_samples; ++i) {
@@ -24,7 +24,7 @@ void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint3
       output_buffer[i] = value * gain_factor;
     }
   } else if (input_bits <= 24) {
-    float gain_factor = gain / 8388608.0;
+    float gain_factor = gain / 8388608.0f;
     unsigned int i, j;
 
     for (i = j = 0; i < num_samples; ++i) {
@@ -34,7 +34,7 @@ void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint3
       output_buffer[i] = value * gain_factor;
     }
   } else if (input_bits <= 32) {
-    float gain_factor = gain / 2147483648.0;
+    float gain_factor = gain / 2147483648.0f;
     unsigned int i, j;
 
     for (i = j = 0; i < num_samples; ++i) {
@@ -49,7 +49,7 @@ void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint3
 
 uint32_t float_to_quantized(const float *input_buffer, uint8_t *output_buffer, uint32_t num_samples,
                             uint8_t output_bits) {
-  float scalar = (static_cast<uint64_t>(1) << output_bits) / 2.0;
+  float scalar = (static_cast<uint64_t>(1) << output_bits) / 2.0f;
   int32_t offset = (output_bits <= 8) * 128;
   int32_t high_clip = (1 << (output_bits - 1)) - 1;
   int32_t low_clip = ~high_clip;
@@ -58,7 +58,7 @@ uint32_t float_to_quantized(const float *input_buffer, uint8_t *output_buffer, u
   uint32_t clipped_samples = 0;
 
   for (i = j = 0; i < num_samples; ++i) {
-    int32_t output = floor((input_buffer[i] * scalar) + 0.5);
+    int32_t output = floor((input_buffer[i] * scalar) + 0.5f);
     if (output_bits < 32) {
       if (output > high_clip) {
         ++clipped_samples;
