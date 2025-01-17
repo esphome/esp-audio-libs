@@ -5,7 +5,7 @@ namespace quantization_utils {
 
 void quantized_to_float(const uint8_t *input_buffer, float *output_buffer, uint32_t num_samples, uint8_t input_bits,
                         float gain_db) {
-  float gain = pow(10.0f, gain_db / 20.0f);
+  float gain = powf(10.0f, gain_db / 20.0f);
 
   if (input_bits <= 8) {
     float gain_factor = gain / 128.0f;
@@ -58,7 +58,7 @@ uint32_t float_to_quantized(const float *input_buffer, uint8_t *output_buffer, u
   uint32_t clipped_samples = 0;
 
   for (i = j = 0; i < num_samples; ++i) {
-    int32_t output = floor((input_buffer[i] * scalar) + 0.5f);
+    int32_t output = floorf((input_buffer[i] * scalar) + 0.5f);
     if (output_bits < 32) {
       if (output > high_clip) {
         ++clipped_samples;
