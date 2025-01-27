@@ -2,7 +2,11 @@
 
 #include <stdlib.h>
 #include <string.h>
+#ifdef __XTENSA__
 #include <xtensa/config/core-isa.h>
+#else
+#include <cmath>
+#endif
 
 namespace esp_audio_libs {
 namespace helix_decoder {
@@ -50,6 +54,7 @@ typedef long long Word64;
 static __inline Word64 MADD64(Word64 sum64, int x, int y) { return (sum64 + ((long long) x * y)); }
 
 static __inline int MULSHIFT32(int x, int y) {
+#ifdef __XTENSA__
   /* important rules for smull RdLo, RdHi, Rm, Rs:
    *     RdHi and Rm can't be the same register
    *     RdLo and Rm can't be the same register
@@ -63,12 +68,19 @@ static __inline int MULSHIFT32(int x, int y) {
   int ret;
   asm volatile("mulsh %0, %1, %2" : "=r"(ret) : "r"(x), "r"(y));
   return ret;
+#else
+  return ((uint64_t) x * (uint64_t) y >> 32);
+#endif
 }
 
 static __inline int FASTABS(int x) {
+#ifdef __XTENSA__
   int ret;
   asm volatile("abs %0, %1" : "=r"(ret) : "r"(x));
   return ret;
+#else
+  return std::abs(x);
+#endif
 }
 
 static __inline Word64 SAR64(Word64 x, int n) { return x >> n; }
