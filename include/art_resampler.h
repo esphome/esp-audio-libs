@@ -6,7 +6,6 @@
 //      Distributed under the BSD Software License (see license.txt)      //
 ////////////////////////////////////////////////////////////////////////////
 
-// resampler.h
 #pragma once
 
 #include <string.h>
