@@ -257,6 +257,10 @@ FLACDecoderResult FLACDecoder::decode_frame(uint8_t *buffer, size_t buffer_lengt
     // freed in free_buffers()
     this->block_samples_ = (int32_t *) heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t),
                                                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (this->block_samples_ == nullptr) {
+      this->block_samples_ =
+          (int32_t *) heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t), MALLOC_CAP_8BIT);
+    }
   }
   if (!this->block_samples_) {
     return FLAC_DECODER_ERROR_MEMORY_ALLOCATION_ERROR;

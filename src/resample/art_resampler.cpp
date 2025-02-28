@@ -107,9 +107,22 @@ Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpa
   cxt->filters = (float **) calloc(cxt->numFilters + 1, sizeof(float *));
 
   cxt->tempFilter = (float *) heap_caps_malloc(numTaps * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (cxt->tempFilter == nullptr) {
+    cxt->tempFilter = (float *) malloc(numTaps * sizeof(float));
+  }
+
+  if (cxt->tempFilter == nullptr) {
+    return NULL;
+  }
 
   for (i = 0; i <= cxt->numFilters; ++i) {
     cxt->filters[i] = (float *) heap_caps_malloc(cxt->numTaps * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (cxt->filters[i] == nullptr) {
+      cxt->filters[i] = (float *) malloc(cxt->numTaps * sizeof(float));
+    }
+    if (cxt->filters[i] == nullptr) {
+      return NULL;
+    }
     memset(cxt->filters[i], 0, cxt->numTaps * sizeof(float));
     init_filter(cxt, cxt->filters[i], (float) i / cxt->numFilters, lowpassRatio);
   }
@@ -120,6 +133,12 @@ Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpa
 
   for (i = 0; i < numChannels; ++i) {
     cxt->buffers[i] = (float *) heap_caps_malloc(cxt->numSamples * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (cxt->buffers[i] == nullptr) {
+      cxt->buffers[i] = (float *) malloc(cxt->numSamples * sizeof(float));
+    }
+    if (cxt->buffers[i] == nullptr) {
+      return NULL;
+    }
     memset(cxt->buffers[i], 0, cxt->numSamples * sizeof(float));
   }
 

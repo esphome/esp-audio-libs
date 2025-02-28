@@ -8056,17 +8056,34 @@ MP3DecInfo *AllocateBuffers(void) {
   SubbandInfo *sbi;
 
   mp3DecInfo = (MP3DecInfo *) heap_caps_malloc(sizeof(MP3DecInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (mp3DecInfo == nullptr) {
+    mp3DecInfo = (MP3DecInfo *) malloc(sizeof(MP3DecInfo));
+  }
   if (!mp3DecInfo)
     return 0;
   ClearBuffer(mp3DecInfo, sizeof(MP3DecInfo));
 
-  fh = (FrameHeader *) heap_caps_malloc(sizeof(FrameHeader), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  si = (SideInfo *) heap_caps_malloc(sizeof(SideInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  sfi = (ScaleFactorInfo *) heap_caps_malloc(sizeof(ScaleFactorInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   hi = (HuffmanInfo *) heap_caps_malloc(sizeof(HuffmanInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (hi == nullptr) {
+    hi = (HuffmanInfo *) malloc(sizeof(HuffmanInfo));
+  }
   di = (DequantInfo *) heap_caps_malloc(sizeof(DequantInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (di == nullptr) {
+    di = (DequantInfo *) malloc(sizeof(DequantInfo));
+  }
   mi = (IMDCTInfo *) heap_caps_malloc(sizeof(IMDCTInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (mi == nullptr) {
+    mi = (IMDCTInfo *) malloc(sizeof(IMDCTInfo));
+  }
   sbi = (SubbandInfo *) heap_caps_malloc(sizeof(SubbandInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  if (sbi == nullptr) {
+    sbi = (SubbandInfo *) malloc(sizeof(SubbandInfo));
+  }
+
+  // Relatively small structures, fine to leave in internal memory
+  fh = (FrameHeader *) malloc(sizeof(FrameHeader));
+  si = (SideInfo *) malloc(sizeof(SideInfo));
+  sfi = (ScaleFactorInfo *) malloc(sizeof(ScaleFactorInfo));
 
   mp3DecInfo->FrameHeaderPS = (void *) fh;
   mp3DecInfo->SideInfoPS = (void *) si;
