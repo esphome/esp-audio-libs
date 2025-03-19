@@ -455,7 +455,7 @@ FLACDecoderResult FLACDecoder::decode_lpc_subframe(uint32_t block_size, std::siz
   uint32_t precision = this->read_uint(4) + 1;
   int32_t shift = this->read_sint(5);
 
-  std::vector<int16_t> coefs;
+  std::vector<int32_t> coefs;
   coefs.resize(lpc_order + 1);
   for (std::size_t i = 0; i < lpc_order; i++) {
     coefs[lpc_order - i - 1] = this->read_sint(precision);
@@ -536,7 +536,7 @@ FLACDecoderResult FLACDecoder::decode_residuals(int32_t *sub_frame_buffer, size_
 }  // decode_residuals
 
 void FLACDecoder::restore_linear_prediction(int32_t *sub_frame_buffer, size_t num_of_samples,
-                                            const std::vector<int16_t> &coefs, int32_t shift) {
+                                            const std::vector<int32_t> &coefs, int32_t shift) {
   for (std::size_t i = 0; i < num_of_samples - coefs.size() + 1; i++) {
     int32_t sum = 0;
     for (std::size_t j = 0; j < coefs.size(); ++j) {

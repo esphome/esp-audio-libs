@@ -41,7 +41,7 @@ enum FLACDecoderResult {
 };
 
 // Coefficients for fixed linear prediction
-const static std::vector<int16_t> FLAC_FIXED_COEFFICIENTS[] = {
+const static std::vector<int32_t> FLAC_FIXED_COEFFICIENTS[] = {
     {1}, {1, 1}, {-1, 2, 1}, {1, -3, 3, 1}, {-1, 4, -6, 4, 1}};
 
 /* Basic FLAC decoder ported from:
@@ -116,7 +116,7 @@ class FLACDecoder {
   FLACDecoderResult decode_residuals(int32_t *buffer, size_t warm_up_samples, uint32_t block_size);
 
   /* Completes predicted samples. */
-  void restore_linear_prediction(int32_t *sub_frame_buffer, size_t num_of_samples, const std::vector<int16_t> &coefs,
+  void restore_linear_prediction(int32_t *sub_frame_buffer, size_t num_of_samples, const std::vector<int32_t> &coefs,
                                  int32_t shift);
 
   uint32_t read_aligned_byte();
