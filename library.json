@@ -18,5 +18,10 @@
     "homepage": "https://github.com/esphome/esp-audio-libs.git",
     "dependencies": [],
     "frameworks": "*",
-    "platforms": "espressif32"
+    "platforms": "espressif32",
+    "build": {
+      "flags": [
+        "-O2"
+      ]
+    }
   }
