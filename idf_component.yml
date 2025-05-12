@@ -3,3 +3,7 @@ url: "https://github.com/esphome/esp-audio-libs"
 repository: "https://github.com/esphome/esp-audio-libs.git"
 files:
   use_gitngnore: true
+  exclude:
+    - .clang-format
+    - .gitignore
+    - library.json
