@@ -12,6 +12,7 @@ permissions:
 jobs:
   release-drafter:
     name: Release Drafter
+    environment: release-drafter
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v6
@@ -20,10 +21,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: Set library.json version
+      - name: Update version files
         run: |
           sed -i "s/\"version\": .*/\"version\": \"${{ steps.drafter.outputs.resolved_version }}\",/g" library.json
+          sed -i "s/esp-audio-libs VERSION .*)/esp-audio-libs VERSION ${{ steps.drafter.outputs.resolved_version }})/g" CMakeLists.txt
 
       - name: Commit changes
         run: |
