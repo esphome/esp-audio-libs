@@ -6,7 +6,6 @@
 #include "art_resampler.h"
 
 #include <algorithm>
-#include <esp_heap_caps.h>
 
 namespace esp_audio_libs {
 namespace resampler {

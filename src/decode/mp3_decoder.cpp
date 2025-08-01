@@ -41,8 +41,7 @@
  **************************************************************************************/
 
 #include "mp3_decoder.h"
-
-#include <esp_heap_caps.h>
+#include "../memory_utils.h"
 
 namespace esp_audio_libs {
 namespace helix_decoder {
@@ -8055,30 +8054,15 @@ MP3DecInfo *AllocateBuffers(void) {
   IMDCTInfo *mi;
   SubbandInfo *sbi;
 
-  mp3DecInfo = (MP3DecInfo *) heap_caps_malloc(sizeof(MP3DecInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (mp3DecInfo == nullptr) {
-    mp3DecInfo = (MP3DecInfo *) malloc(sizeof(MP3DecInfo));
-  }
+  mp3DecInfo = (MP3DecInfo *) internal::alloc_psram_fallback(sizeof(MP3DecInfo));
   if (!mp3DecInfo)
     return 0;
   ClearBuffer(mp3DecInfo, sizeof(MP3DecInfo));
 
-  hi = (HuffmanInfo *) heap_caps_malloc(sizeof(HuffmanInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (hi == nullptr) {
-    hi = (HuffmanInfo *) malloc(sizeof(HuffmanInfo));
-  }
-  di = (DequantInfo *) heap_caps_malloc(sizeof(DequantInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (di == nullptr) {
-    di = (DequantInfo *) malloc(sizeof(DequantInfo));
-  }
-  mi = (IMDCTInfo *) heap_caps_malloc(sizeof(IMDCTInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (mi == nullptr) {
-    mi = (IMDCTInfo *) malloc(sizeof(IMDCTInfo));
-  }
-  sbi = (SubbandInfo *) heap_caps_malloc(sizeof(SubbandInfo), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (sbi == nullptr) {
-    sbi = (SubbandInfo *) malloc(sizeof(SubbandInfo));
-  }
+  hi = (HuffmanInfo *) internal::alloc_psram_fallback(sizeof(HuffmanInfo));
+  di = (DequantInfo *) internal::alloc_psram_fallback(sizeof(DequantInfo));
+  mi = (IMDCTInfo *) internal::alloc_psram_fallback(sizeof(IMDCTInfo));
+  sbi = (SubbandInfo *) internal::alloc_psram_fallback(sizeof(SubbandInfo));
 
   // Relatively small structures, fine to leave in internal memory
   fh = (FrameHeader *) malloc(sizeof(FrameHeader));
@@ -8115,7 +8099,7 @@ MP3DecInfo *AllocateBuffers(void) {
 #define SAFE_FREE(x) \
   { \
     if (x) \
-      free(x); \
+      internal::free_psram_fallback(x); \
     (x) = 0; \
   } /* helper macro */
 

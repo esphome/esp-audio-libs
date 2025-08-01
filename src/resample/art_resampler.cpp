@@ -9,8 +9,7 @@
 #include "art_resampler.h"
 
 #include "dsp.h"
-
-#include <esp_heap_caps.h>
+#include "../memory_utils.h"
 
 namespace esp_audio_libs {
 namespace art_resampler {
@@ -106,20 +105,14 @@ Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpa
   // note that we actually have one more than the specified number of filters
   cxt->filters = (float **) calloc(cxt->numFilters + 1, sizeof(float *));
 
-  cxt->tempFilter = (float *) heap_caps_malloc(numTaps * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (cxt->tempFilter == nullptr) {
-    cxt->tempFilter = (float *) malloc(numTaps * sizeof(float));
-  }
+  cxt->tempFilter = (float *) internal::alloc_psram_fallback(numTaps * sizeof(float));
 
   if (cxt->tempFilter == nullptr) {
     return NULL;
   }
 
   for (i = 0; i <= cxt->numFilters; ++i) {
-    cxt->filters[i] = (float *) heap_caps_malloc(cxt->numTaps * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (cxt->filters[i] == nullptr) {
-      cxt->filters[i] = (float *) malloc(cxt->numTaps * sizeof(float));
-    }
+    cxt->filters[i] = (float *) internal::alloc_psram_fallback(cxt->numTaps * sizeof(float));
     if (cxt->filters[i] == nullptr) {
       return NULL;
     }
@@ -127,15 +120,12 @@ Resample *resampleInit(int numChannels, int numTaps, int numFilters, float lowpa
     init_filter(cxt, cxt->filters[i], (float) i / cxt->numFilters, lowpassRatio);
   }
 
-  free(cxt->tempFilter);
+  internal::free_psram_fallback(cxt->tempFilter);
   cxt->tempFilter = NULL;
   cxt->buffers = (float **) calloc(numChannels, sizeof(float *));
 
   for (i = 0; i < numChannels; ++i) {
-    cxt->buffers[i] = (float *) heap_caps_malloc(cxt->numSamples * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (cxt->buffers[i] == nullptr) {
-      cxt->buffers[i] = (float *) malloc(cxt->numSamples * sizeof(float));
-    }
+    cxt->buffers[i] = (float *) internal::alloc_psram_fallback(cxt->numSamples * sizeof(float));
     if (cxt->buffers[i] == nullptr) {
       return NULL;
     }
@@ -364,12 +354,12 @@ void resampleFree(Resample *cxt) {
   int i;
 
   for (i = 0; i <= cxt->numFilters; ++i)
-    free(cxt->filters[i]);
+    internal::free_psram_fallback(cxt->filters[i]);
 
   free(cxt->filters);
 
   for (i = 0; i < cxt->numChannels; ++i)
-    free(cxt->buffers[i]);
+    internal::free_psram_fallback(cxt->buffers[i]);
 
   free(cxt->buffers);
   free(cxt);

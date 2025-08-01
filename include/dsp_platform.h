@@ -1,7 +1,9 @@
 #ifndef _dsp_platform_H_
 #define _dsp_platform_H_
 
+#ifdef ESP_PLATFORM
 #include "sdkconfig.h"
+#endif
 
 #ifdef __XTENSA__
 #include <xtensa/config/core-isa.h>

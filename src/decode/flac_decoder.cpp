@@ -1,10 +1,11 @@
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include <esp_heap_caps.h>
 #include "flac_decoder.h"
+#include "../memory_utils.h"
 
 namespace esp_audio_libs {
 namespace flac {
@@ -255,12 +256,7 @@ FLACDecoderResult FLACDecoder::decode_frame(uint8_t *buffer, size_t buffer_lengt
 
   if (!this->block_samples_) {
     // freed in free_buffers()
-    this->block_samples_ = (int32_t *) heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t),
-                                                        MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-    if (this->block_samples_ == nullptr) {
-      this->block_samples_ =
-          (int32_t *) heap_caps_malloc(this->max_block_size_ * this->num_channels_ * sizeof(int32_t), MALLOC_CAP_8BIT);
-    }
+    this->block_samples_ = (int32_t *) internal::alloc_psram_fallback(this->max_block_size_ * this->num_channels_ * sizeof(int32_t));
   }
   if (!this->block_samples_) {
     return FLAC_DECODER_ERROR_MEMORY_ALLOCATION_ERROR;
@@ -317,7 +313,7 @@ FLACDecoderResult FLACDecoder::decode_frame(uint8_t *buffer, size_t buffer_lengt
 
 void FLACDecoder::free_buffers() {
   if (this->block_samples_) {
-    free(this->block_samples_);
+    internal::free_psram_fallback(this->block_samples_);
     this->block_samples_ = nullptr;
   }
 }  // free_buffers

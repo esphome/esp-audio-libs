@@ -5,17 +5,18 @@
  */
 
 #include "dsp.h"
+#include <stddef.h>
 
 esp_err_t dsps_add_s16_ansi(const int16_t *input1, const int16_t *input2, int16_t *output, int len, int step1,
                             int step2, int step_out, int shift) {
   if (NULL == input1) {
-    return ESP_ERR_INVALID_ARG;
+    return ESP_FAIL;
   }
   if (NULL == input2) {
-    return ESP_ERR_INVALID_ARG;
+    return ESP_FAIL;
   }
   if (NULL == output) {
-    return ESP_ERR_INVALID_ARG;
+    return ESP_FAIL;
   }
 
   for (int i = 0; i < len; i++) {

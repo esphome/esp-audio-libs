@@ -16,8 +16,16 @@
 #define _DSP_H_
 
 #include "dsp_platform.h"
+#include <stdint.h>
 
+#ifdef ESP_PLATFORM
 #include <esp_err.h>
+#else
+// Define ESP error codes for non-ESP platforms
+typedef int esp_err_t;
+#define ESP_OK 0
+#define ESP_FAIL -1
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,5 +1,6 @@
 #include "resampler.h"
 #include "quantization_utils.h"
+#include "../memory_utils.h"
 
 namespace esp_audio_libs {
 namespace resampler {
@@ -10,10 +11,10 @@ Resampler::~Resampler() {
   }
 
   if (this->float_input_buffer_ != nullptr) {
-    free(this->float_input_buffer_);
+    internal::free_psram_fallback(this->float_input_buffer_);
   }
   if (this->float_output_buffer_ != nullptr) {
-    free(this->float_output_buffer_);
+    internal::free_psram_fallback(this->float_output_buffer_);
   }
 };
 
@@ -25,16 +26,10 @@ bool Resampler::initialize(ResamplerConfiguration &config) {
   this->number_of_filters_ = config.number_of_filters;
 
   this->float_input_buffer_ =
-      (float *) heap_caps_malloc(this->input_buffer_samples_ * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (this->float_input_buffer_ == nullptr) {
-    this->float_input_buffer_ = (float *) malloc(this->input_buffer_samples_ * sizeof(float));
-  }
+      (float *) internal::alloc_psram_fallback(this->input_buffer_samples_ * sizeof(float));
 
   this->float_output_buffer_ =
-      (float *) heap_caps_malloc(this->output_buffer_samples_ * sizeof(float), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-  if (this->float_output_buffer_ == nullptr) {
-    this->float_output_buffer_ = (float *) malloc(this->output_buffer_samples_ * sizeof(float));
-  }
+      (float *) internal::alloc_psram_fallback(this->output_buffer_samples_ * sizeof(float));
 
   if ((this->float_input_buffer_ == nullptr) || (this->float_output_buffer_ == nullptr)) {
     return false;

@@ -13,13 +13,14 @@
 // limitations under the License.
 
 #include "dsp.h"
+#include <stddef.h>
 
 esp_err_t dsps_mulc_s16_ansi(const int16_t *input, int16_t *output, int len, int16_t C, int step_in, int step_out) {
   if (NULL == input) {
-    return ESP_ERR_INVALID_ARG;
+    return ESP_FAIL;
   }
   if (NULL == output) {
-    return ESP_ERR_INVALID_ARG;
+    return ESP_FAIL;
   }
 
   for (int i = 0; i < len; i++) {
