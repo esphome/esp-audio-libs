@@ -20,6 +20,10 @@ FLACDecoderResult FLACDecoder::read_header(uint8_t *buffer, size_t buffer_length
   this->out_of_data_ = (buffer_length == 0);
 
   if (!this->partial_header_read_) {
+    // Starting fresh - clear any previous metadata
+    this->metadata_blocks_.clear();
+    this->partial_header_data_.clear();
+    
     // File must start with 'fLaC'
     if (this->read_uint(32) != FLAC_MAGIC_NUMBER) {
       return FLAC_DECODER_ERROR_BAD_MAGIC_NUMBER;
@@ -34,35 +38,81 @@ FLACDecoderResult FLACDecoder::read_header(uint8_t *buffer, size_t buffer_length
     }
 
     if (this->partial_header_length_ == 0) {
+      // Starting a new metadata block
       this->partial_header_last_ = this->read_uint(1) != 0;
       this->partial_header_type_ = this->read_uint(7);
       this->partial_header_length_ = this->read_uint(24);
+      this->partial_header_bytes_read_ = 0;
+      
+      // Pre-allocate space for the metadata block data
+      this->partial_header_data_.clear();
+      // Only pre-allocate if it's not an oversized picture block
+      if (!(this->partial_header_type_ == FLAC_METADATA_TYPE_PICTURE && 
+            this->partial_header_length_ > this->max_album_art_size_)) {
+        this->partial_header_data_.reserve(this->partial_header_length_);
+      }
     }
 
     if (this->partial_header_type_ == 0) {
-      // Stream info block
+      // Stream info block - parse it directly
       this->min_block_size_ = this->read_uint(16);
       this->max_block_size_ = this->read_uint(16);
-      this->read_uint(24);
-      this->read_uint(24);
+      this->read_uint(24);  // min frame size
+      this->read_uint(24);  // max frame size
 
       this->sample_rate_ = this->read_uint(20);
       this->num_channels_ = this->read_uint(3) + 1;
       this->sample_depth_ = this->read_uint(5) + 1;
       this->num_samples_ = this->read_uint(36);
-      this->read_uint(128);
+      this->read_uint(128);  // MD5 signature
 
       this->partial_header_length_ = 0;
-    } else {
-      // Variable block
-      while (this->partial_header_length_ > 0) {
-        if (this->bytes_left_ == 0) {
-          break;
-        }
+      this->partial_header_bytes_read_ = 0;
+    } else if (this->partial_header_type_ == FLAC_METADATA_TYPE_PICTURE && 
+               this->partial_header_length_ > this->max_album_art_size_) {
+      // Skip album art that exceeds size limit
+      uint32_t bytes_to_skip = std::min(this->partial_header_length_ - this->partial_header_bytes_read_,
+                                        static_cast<uint32_t>(this->bytes_left_));
+      
+      // Skip bytes without storing them
+      for (uint32_t i = 0; i < bytes_to_skip; i++) {
         this->read_uint(8);
-        --this->partial_header_length_;
+        this->partial_header_bytes_read_++;
       }
-    }  // variable block
+      
+      // Check if we've skipped the entire block
+      if (this->partial_header_bytes_read_ == this->partial_header_length_) {
+        // Reset for next block - don't store this oversized album art
+        this->partial_header_length_ = 0;
+        this->partial_header_bytes_read_ = 0;
+        this->partial_header_data_.clear();
+      }
+    } else {
+      // Other metadata blocks - store them
+      uint32_t bytes_to_read = std::min(this->partial_header_length_ - this->partial_header_bytes_read_,
+                                        static_cast<uint32_t>(this->bytes_left_));
+      
+      // Read bytes directly into the partial header data buffer
+      for (uint32_t i = 0; i < bytes_to_read; i++) {
+        this->partial_header_data_.push_back(this->read_uint(8));
+        this->partial_header_bytes_read_++;
+      }
+      
+      // Check if we've read the entire block
+      if (this->partial_header_bytes_read_ == this->partial_header_length_) {
+        // Complete metadata block - store it
+        FLACMetadataBlock block;
+        block.type = static_cast<FLACMetadataType>(this->partial_header_type_);
+        block.length = this->partial_header_length_;
+        block.data = std::move(this->partial_header_data_);
+        this->metadata_blocks_.push_back(std::move(block));
+        
+        // Reset for next block
+        this->partial_header_length_ = 0;
+        this->partial_header_bytes_read_ = 0;
+        this->partial_header_data_.clear();
+      }
+    }  // other metadata blocks
   }
 
   if ((this->sample_rate_ == 0) || (this->num_channels_ == 0) || (this->sample_depth_ == 0) ||
@@ -316,6 +366,10 @@ void FLACDecoder::free_buffers() {
     internal::free_psram_fallback(this->block_samples_);
     this->block_samples_ = nullptr;
   }
+  
+  // Clear metadata blocks
+  this->metadata_blocks_.clear();
+  this->partial_header_data_.clear();
 }  // free_buffers
 
 FLACDecoderResult FLACDecoder::decode_subframes(uint32_t block_size, uint32_t sample_depth,

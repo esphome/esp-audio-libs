@@ -16,6 +16,25 @@ namespace flac {
 // 'fLaC'
 const static uint32_t FLAC_MAGIC_NUMBER = 0x664C6143;
 
+// FLAC metadata block types
+enum FLACMetadataType {
+  FLAC_METADATA_TYPE_STREAMINFO = 0,
+  FLAC_METADATA_TYPE_PADDING = 1,
+  FLAC_METADATA_TYPE_APPLICATION = 2,
+  FLAC_METADATA_TYPE_SEEKTABLE = 3,
+  FLAC_METADATA_TYPE_VORBIS_COMMENT = 4,
+  FLAC_METADATA_TYPE_CUESHEET = 5,
+  FLAC_METADATA_TYPE_PICTURE = 6,
+  FLAC_METADATA_TYPE_INVALID = 127
+};
+
+// Structure to hold metadata block information
+struct FLACMetadataBlock {
+  FLACMetadataType type;
+  uint32_t length;
+  std::vector<uint8_t> data;
+};
+
 const static uint32_t FLAC_UINT_MASK[] = {
     0x00000000, 0x00000001, 0x00000003, 0x00000007, 0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff,
     0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff, 0x0001ffff,
@@ -49,6 +68,9 @@ const static std::vector<int32_t> FLAC_FIXED_COEFFICIENTS[] = {
  */
 class FLACDecoder {
  public:
+  /* Maximum size for album art storage (default: 0 - album art disabled) */
+  static constexpr uint32_t DEFAULT_MAX_ALBUM_ART_SIZE = 0;
+
   ~FLACDecoder() { this->free_buffers(); }
 
   /* Reads FLAC header from buffer.
@@ -92,6 +114,25 @@ class FLACDecoder {
 
   /* Number of unread bytes in the input buffer. */
   std::size_t get_bytes_left() { return this->bytes_left_; }
+
+  /* Get metadata blocks (after read_header()) */
+  const std::vector<FLACMetadataBlock> &get_metadata_blocks() const { return this->metadata_blocks_; }
+
+  /* Get specific metadata block by type (returns nullptr if not found) */
+  const FLACMetadataBlock *get_metadata_block(FLACMetadataType type) const {
+    for (const auto &block : this->metadata_blocks_) {
+      if (block.type == type) {
+        return &block;
+      }
+    }
+    return nullptr;
+  }
+
+  /* Set maximum album art size (in bytes). Album art larger than this will be skipped. */
+  void set_max_album_art_size(uint32_t max_size) { this->max_album_art_size_ = max_size; }
+
+  /* Get maximum album art size (in bytes) */
+  uint32_t get_max_album_art_size() const { return this->max_album_art_size_; }
 
  protected:
   FLACDecoderResult frame_sync_();
@@ -180,6 +221,14 @@ class FLACDecoder {
   bool partial_header_last_{false};
   uint32_t partial_header_type_{0};
   uint32_t partial_header_length_{0};
+  uint32_t partial_header_bytes_read_{0};
+  std::vector<uint8_t> partial_header_data_;
+
+  /* Storage for all metadata blocks */
+  std::vector<FLACMetadataBlock> metadata_blocks_;
+
+  /* Maximum album art size in bytes */
+  uint32_t max_album_art_size_ = DEFAULT_MAX_ALBUM_ART_SIZE;
 
   uint8_t frame_sync_bytes_[2];
 };
