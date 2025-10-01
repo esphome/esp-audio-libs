@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.15)
 
 # Common source files
 set(srcs
-  src/decode/flac_decoder.cpp
+  src/decode/flac/flac_decoder.cpp
+  src/decode/flac/flac_lpc.cpp
+  src/decode/flac/flac_crc.cpp
   src/decode/mp3_decoder.cpp
   src/decode/wav_decoder.cpp
   src/dsp/dsps_add_s16_ansi.c
@@ -27,6 +29,8 @@ if(ESP_PLATFORM)
     src/dsp/dsps_dotprod_f32_aes3.S
     src/dsp/dsps_dotprod_f32_m_ae32.S
     src/dsp/dsps_mulc_s16_ae32.S
+    src/decode/flac/flac_lpc_32_asm.S
+    src/decode/flac/flac_lpc_64_asm.S
   )
   
   # Build as an ESP-IDF component

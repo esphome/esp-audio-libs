@@ -60,3 +60,5 @@ dkms.conf
 .vscode
 build/
 dist/
+
+./flac_to_wav
