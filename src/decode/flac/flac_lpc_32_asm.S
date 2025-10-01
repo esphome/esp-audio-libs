@@ -18,6 +18,9 @@
  * - Generic fallback for orders > 12
  */
 
+#include "dsp_platform.h"
+#if (flac_lpc_asm_enabled == 1)
+
 .section .text
 .global restore_linear_prediction_32bit_asm
 .type restore_linear_prediction_32bit_asm, @function
@@ -904,3 +907,4 @@ restore_linear_prediction_32bit_asm:
     movi a2, 0                      // Return success
     retw.n
 
+#endif  // flac_lpc_asm_enabled
