@@ -61,4 +61,5 @@ dkms.conf
 build/
 dist/
 
-./flac_to_wav
+flac_to_wav
+!flac_to_wav/
