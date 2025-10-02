@@ -18,7 +18,7 @@
  * - Generic fallback for orders > 12
  */
 
-#include "dsp_platform.h"
+#include "flac_lpc_platform.h"
 #if (flac_lpc_asm_enabled == 1)
 
 .section .text

@@ -20,7 +20,7 @@
  * - Efficient 64-bit shifting using SRC instruction
  */
 
-#include "dsp_platform.h"
+#include "flac_lpc_platform.h"
 #if (flac_lpc_asm_enabled == 1)
 
 .section .text
